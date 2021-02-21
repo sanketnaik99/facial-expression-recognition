@@ -51,13 +51,15 @@ def init_model():
     Load the saved quantized model for inference.
     """
     # Initialize the Model using the saved Quantized Model
-    print('\n\nInitializing Model...')
-    model = jit.load(
-        'models/convnet-traced-new.pt', map_location='cpu')
-    print('Model Loaded Successfully')
+
     try:
-        print('Try Block')
-    except:
+        torch.backends.quantized.engine = 'qnnpack'
+        print('\n\nInitializing Model...')
+        model = jit.load(
+            'models/convnet-traced-new.pt', map_location='cpu')
+        print('Model Loaded Successfully')
+    except Exception as e:
+        print(e)
         print('ERROR: Could not Initialize the Model.')
         sys.exit(1)
 
