@@ -1,4 +1,5 @@
 env/
 models/__pycache__
-
+__pycache__
+input-image.jpg
 ./result.jpg

@@ -4,8 +4,11 @@ import torchvision.transforms as tt
 from models.convnet import ConvNet
 from cv2 import CascadeClassifier, COLOR_BGR2GRAY, cvtColor, FONT_HERSHEY_SIMPLEX, putText, rectangle, resize, imread, imwrite
 from PIL import Image
+import io
+
 
 classes = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
+
 
 def load_image(imagePath):
     """
@@ -20,7 +23,7 @@ def load_image(imagePath):
         if input_image is None:
             raise IOError
         print('Input Image Loaded Successfully')
-    except IOError: 
+    except IOError:
         print('ERROR: Could not Load the input Image')
         sys.exit(1)
 
@@ -38,8 +41,9 @@ def init_face_classifier():
     except:
         print('ERROR: Could not Load the Cascade Classifier')
         sys.exit(1)
-    
+
     return facec
+
 
 def init_model():
     """
@@ -48,13 +52,17 @@ def init_model():
     # Initialize the Model using the saved Quantized Model
     print('\n\nInitializing Model...')
     try:
-        model = torch.load('models/convnet-quantized-full.pt')
+        with open('models/convnet-traced-new.pt', 'rb') as f:
+            buffer = io.BytesIO(f.read())
+        buffer.seek(0)
+        model = torch.jit.load(buffer, map_location='cpu')
         print('Model Loaded Successfully')
     except:
         print('ERROR: Could not Initialize the Model.')
         sys.exit(1)
 
     return model
+
 
 def predict(image, facec, model):
     """
@@ -71,11 +79,11 @@ def predict(image, facec, model):
         # Crop the face into a separate image
         cropped_face = grayscale_image[y:y+h, x:x+w]
         # Resize the image into an image of size 48x48
-        resized_face = resize(cropped_face, (48,48))
+        resized_face = resize(cropped_face, (48, 48))
         # Convert the image into a PIL image
         PIL_image = Image.fromarray(resized_face)
         # Preprocess the image using torchvision.transforms
-        preprocess = tt.Compose([tt.Grayscale(1), tt.ToTensor()])
+        preprocess = tt.Compose([tt.Grayscale(3), tt.ToTensor()])
         processed_image = preprocess(PIL_image)
         print(f'Processed Image Shape => {processed_image.shape}')
         # Run predictions
@@ -88,8 +96,9 @@ def predict(image, facec, model):
         predictions.append(prediction)
         print(f'\nPrediction for Face {current} => {prediction}')
         # Add the rectangle and label to the original image
-        putText(image, prediction, (x, y-10), FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-        rectangle(image, (x,y), (x+w, y+h), (0, 255, 0), 2)
+        putText(image, prediction, (x, y-10),
+                FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
 
         current += 1
     imwrite('result.jpg', image)
@@ -104,10 +113,3 @@ if __name__ == "__main__":
     # This function will return a string array contianing all the predictions
     predictions = predict(image, facec, model)
     print(f'Predictions => {predictions}')
-
-
-
-
-
-
-
