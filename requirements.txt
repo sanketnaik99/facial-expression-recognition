@@ -1,3 +1,4 @@
+-f https://download.pytorch.org/whl/torch_stable.html
 autopep8==1.5.5
 click==7.1.2
 dataclasses==0.6
