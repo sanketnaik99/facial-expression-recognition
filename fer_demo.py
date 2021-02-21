@@ -52,10 +52,11 @@ def init_model():
     """
     # Initialize the Model using the saved Quantized Model
     print('\n\nInitializing Model...')
+    model = jit.load(
+        'models/convnet-traced-new.pt', map_location='cpu')
+    print('Model Loaded Successfully')
     try:
-        model = jit.load(
-            'models/convnet-traced-new.pt', map_location='cpu')
-        print('Model Loaded Successfully')
+        print('Try Block')
     except:
         print('ERROR: Could not Initialize the Model.')
         sys.exit(1)
