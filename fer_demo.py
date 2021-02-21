@@ -5,6 +5,7 @@ from models.convnet import ConvNet
 from cv2 import CascadeClassifier, COLOR_BGR2GRAY, cvtColor, FONT_HERSHEY_SIMPLEX, putText, rectangle, resize, imread, imwrite
 from PIL import Image
 import io
+import torch.jit as jit
 
 
 classes = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
@@ -52,10 +53,8 @@ def init_model():
     # Initialize the Model using the saved Quantized Model
     print('\n\nInitializing Model...')
     try:
-        with open('models/convnet-traced-new.pt', 'rb') as f:
-            buffer = io.BytesIO(f.read())
-        buffer.seek(0)
-        model = torch.jit.load(buffer, map_location='cpu')
+        model = jit.load(
+            'models/convnet-traced-new.pt', map_location='cpu')
         print('Model Loaded Successfully')
     except:
         print('ERROR: Could not Initialize the Model.')
