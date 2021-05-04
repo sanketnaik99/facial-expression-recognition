@@ -2,11 +2,12 @@ import sys
 import torch
 import torchvision.transforms as tt
 from models.convnet import ConvNet
+from models.resnet import ResNet
 from cv2 import CascadeClassifier, COLOR_BGR2GRAY, cvtColor, FONT_HERSHEY_SIMPLEX, putText, rectangle, resize, imread, imwrite
 from PIL import Image
 import io
 import torch.jit as jit
-
+import os
 
 classes = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
 
@@ -55,8 +56,8 @@ def init_model():
     try:
         torch.backends.quantized.engine = 'qnnpack'
         print('\n\nInitializing Model...')
-        model = jit.load(
-            'models/convnet-traced-new.pt', map_location='cpu')
+        model = torch.load(
+            'models/resnet9.pt', map_location='cpu')
         print('Model Loaded Successfully')
     except Exception as e:
         print(e)
@@ -66,7 +67,7 @@ def init_model():
     return model
 
 
-def predict(image, facec, model):
+def predict(imageName, image, facec, model):
     """
     This function processes the image, detects the faces on the image and predicts the classes of faces on the image.
     """
@@ -85,7 +86,7 @@ def predict(image, facec, model):
         # Convert the image into a PIL image
         PIL_image = Image.fromarray(resized_face)
         # Preprocess the image using torchvision.transforms
-        preprocess = tt.Compose([tt.Grayscale(3), tt.ToTensor()])
+        preprocess = tt.Compose([tt.Grayscale(3), tt.ToTensor(), tt.Normalize([0.485, 0.456, 0.406], [0.5, 0.5, 0.5]),])
         processed_image = preprocess(PIL_image)
         print(f'Processed Image Shape => {processed_image.shape}')
         # Run predictions
@@ -103,15 +104,28 @@ def predict(image, facec, model):
         rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
 
         current += 1
-    imwrite('result.jpg', image)
+    
+    imwrite(f'results/{imageName}', image)
     return predictions
 
 
 if __name__ == "__main__":
-    imagePath = sys.argv[1]
-    image = load_image(imagePath)
     facec = init_face_classifier()
     model = init_model()
-    # This function will return a string array contianing all the predictions
-    predictions = predict(image, facec, model)
-    print(f'Predictions => {predictions}')
+    data = os.listdir('images/')
+    total_correct = 0
+    total_count = len(data)
+    for imageName in data:
+        imagePath = f'images/{imageName}'
+        label = imageName.split('-')[0].capitalize()
+        image = load_image(imagePath)
+        predictions = predict(imageName, image, facec, model)
+        try:
+            pred = predictions[0]
+            if label == pred:
+                total_correct += 1
+        except:
+            pass
+    
+    per_correct = (total_correct / total_count) * 100
+    print(f'\n\nPercentage of Correct Predictions => {per_correct} %')
