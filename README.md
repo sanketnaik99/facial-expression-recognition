@@ -39,8 +39,9 @@ pip install -r requirements.txt
 
 ```bash
 # Run the Demo Code
-python fer_demo.py images/tony-stark.jpg
+python fer_demo.py
 ```
+This command will run the prediction algorithm on all test images and you will see the results in the `results` folder.
 
 ### Result
 
