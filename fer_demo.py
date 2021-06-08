@@ -1,7 +1,8 @@
 import sys
 import torch
 import torchvision.transforms as tt
-from models.convnet import ConvNet
+from models.deepconvnet import DeepConvNet
+from models.shallowconvnet import ShallowConvNet
 from models.resnet import ResNet
 from cv2 import CascadeClassifier, COLOR_BGR2GRAY, cvtColor, FONT_HERSHEY_SIMPLEX, putText, rectangle, resize, imread, imwrite
 from PIL import Image
@@ -128,4 +129,6 @@ if __name__ == "__main__":
             pass
     
     per_correct = (total_correct / total_count) * 100
+    print(f"\n\nTotal Number of Images = {total_count}")
+    print(f"\nTotal Correct Predictions = {total_correct}")
     print(f'\n\nPercentage of Correct Predictions => {per_correct} %')

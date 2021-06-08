@@ -3,3 +3,9 @@ models/__pycache__
 __pycache__
 input-image.jpg
 ./result.jpg
+
+models/deep-convnet.pt
+models/shallow-convnet.pt
+models/deep-convnet.pt
+models/shallow-convnet.pt
+models/convnet-traced-new.pt
